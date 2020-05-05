@@ -1,4 +1,4 @@
-// Copyright 2017-2017 the openage authors. See copying.md for legal info.
+// Copyright 2017-2020 the openage authors. See copying.md for legal info.
 
 #pragma once
 
@@ -17,10 +17,9 @@ namespace filelike {
 /**
  * File-like class that uses native stdlib functions to access data.
  */
-class Native : public FileLike {
+class Native final : public FileLike {
 public:
 	Native(const std::string &path, mode_t mode=mode_t::R);
-	virtual ~Native();
 
 	std::string read(ssize_t max) override;
 	size_t read_to(void *buf, ssize_t max) override;

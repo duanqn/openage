@@ -1,4 +1,4 @@
-// Copyright 2017-2019 the openage authors. See copying.md for legal info.
+// Copyright 2017-2020 the openage authors. See copying.md for legal info.
 
 #pragma once
 
@@ -28,7 +28,7 @@ namespace filelike {
  * cppclass Python:
  *     PyObj &get_py_fileobj() except +
  */
-class Python : public FileLike {
+class Python final : public FileLike {
 public:
 	Python(const py::Obj &fileobj);
 
