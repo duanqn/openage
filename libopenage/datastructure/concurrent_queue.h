@@ -49,7 +49,7 @@ public:
 	/** Copies the front item in the queue and removes it from the queue. */
 	template<typename... None, typename U = T>
 	T& pop([[maybe_unused]] typename std::enable_if_t<!std::is_move_constructible_v<U> and std::is_copy_constructible_v<U>>* t = NULL) {
-		static_assert(sizeof...(None) == 0);	// Forbid user-specified template arguments
+		static_assert(sizeof...(None) == 0, "User-specified template arguments are prohibited.");
 		std::unique_lock<mutex_t> lock{this->mutex};
 		auto &item = front();
 		this->queue.pop();
@@ -59,7 +59,7 @@ public:
 	/** Moves the front item in the queue and removes it from the queue. */
 	template<typename... None, typename U = T>
 	T &&pop([[maybe_unused]] typename std::enable_if_t<std::is_move_constructible_v<U>>* t = NULL) {
-		static_assert(sizeof...(None) == 0);	// Forbid user-specified template arguments
+		static_assert(sizeof...(None) == 0, "User-specified template arguments are prohibited.");
 		std::unique_lock<mutex_t> lock{this->mutex};
 		T&& ret = std::move(front());
 		this->queue.pop();
@@ -69,7 +69,7 @@ public:
 	/** Appends the given item to the queue by copying it. */
 	template<typename... None, typename U = T>
 	void push(typename std::enable_if_t<std::is_copy_constructible_v<U>, const T&> item) {
-		static_assert(sizeof...(None) == 0);	// Forbid user-specified template arguments
+		static_assert(sizeof...(None) == 0, "User-specified template arguments are prohibited.");
 		std::unique_lock<mutex_t> lock{this->mutex};
 		this->queue.push(item);
 		lock.unlock();
@@ -79,7 +79,7 @@ public:
 	/** Appends the given item to the queue by moving it. */
 	template<typename... None, typename U = T>
 	void push(typename std::enable_if_t<std::is_move_constructible_v<U>, T&&> item) {
-		static_assert(sizeof...(None) == 0);	// Forbid user-specified template arguments
+		static_assert(sizeof...(None) == 0, "User-specified template arguments are prohibited.");
 		std::unique_lock<mutex_t> lock{this->mutex};
 		this->queue.push(std::move(item));
 		lock.unlock();
