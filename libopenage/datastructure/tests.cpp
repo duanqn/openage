@@ -1,4 +1,4 @@
-// Copyright 2014-2019 the openage authors. See copying.md for legal info.
+// Copyright 2014-2020 the openage authors. See copying.md for legal info.
 
 #include "tests.h"
 
@@ -8,11 +8,10 @@
 
 #include "constexpr_map.h"
 #include "pairing_heap.h"
+#include "concurrent_queue.h"
 
 
-namespace openage {
-namespace datastructure {
-namespace tests {
+namespace openage::datastructure::tests {
 
 
 void pairing_heap_0() {
@@ -192,4 +191,57 @@ void constexpr_map() {
 	TESTEQUALS(cmap.get(42), 9001);
 }
 
-}}} // openage::datastructure::tests
+std::mutex CopyMove::s_mutex = std::mutex();
+int CopyMove::s_accumulatedConstructionCounter = 0;
+
+void concurrent_queue_copy_only_elements_compilation() {
+	const int test_data = 157;
+	openage::datastructure::ConcurrentQueue<CopyOnly> queue;
+
+	{
+		CopyOnly tmp(test_data);
+		queue.push(std::move(tmp));
+	}
+
+	CopyOnly res(queue.pop());
+	TESTEQUALS(res.get(), test_data);
+}
+
+void concurrent_queue_move_only_elements_compilation() {
+	const int test_data = 157;
+	openage::datastructure::ConcurrentQueue<MoveOnly> queue;
+
+	{
+		MoveOnly tmp(test_data);
+		queue.push(std::move(tmp));
+	}
+
+	MoveOnly res(queue.pop());
+	TESTEQUALS(res.get(), test_data);
+}
+
+void concurrent_queue_copy_move_elements_compilation() {
+	const int test_data = 157;
+	openage::datastructure::ConcurrentQueue<CopyMove> queue;
+
+	{
+		CopyMove tmp(test_data);
+		queue.push(std::move(tmp));
+	}
+
+	CopyMove res(queue.pop());
+	TESTEQUALS(res.get(), test_data);
+
+	// The second instance should be move-constructed
+	TESTEQUALS(CopyMove::getAccumulatedConstructionCounter(), 1);
+	res.resetAccumulatedConstructionCounter();
+}
+
+// exported test
+void concurrent_queue() {
+	concurrent_queue_copy_only_elements_compilation();
+	concurrent_queue_move_only_elements_compilation();
+	concurrent_queue_copy_move_elements_compilation();
+}
+
+} // openage::datastructure::tests

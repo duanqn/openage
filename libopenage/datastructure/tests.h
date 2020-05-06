@@ -1,13 +1,12 @@
-// Copyright 2014-2016 the openage authors. See copying.md for legal info.
+// Copyright 2014-2020 the openage authors. See copying.md for legal info.
 
 #pragma once
 
 #include <functional>
 #include <stddef.h>
+#include <mutex>
 
-namespace openage {
-namespace datastructure {
-namespace tests {
+namespace openage::datastructure::tests {
 
 /**
  * simplest priority queue element that supports reordering.
@@ -24,9 +23,83 @@ struct heap_elem {
 	}
 };
 
-} // namespace tests
-} // namespace datastructure
-} // namespace openage
+/**
+ * A simple class that can be move-constructed but not copy-constructed
+ */
+class MoveOnly{
+	private:
+	int m_data;
+	public:
+	MoveOnly(int data): m_data(data) {}
+	MoveOnly(const MoveOnly &) = delete;
+	MoveOnly(MoveOnly&& other): m_data(other.get()) {}
+	~MoveOnly() {}
+
+	int get() const {
+		return m_data;
+	}
+};
+
+/**
+ * A simple class that can be copy-constructed but not move-constructed
+ */
+class CopyOnly{
+	private:
+	int m_data;
+	public:
+	CopyOnly(int data): m_data(data) {}
+	CopyOnly(const CopyOnly & other): m_data(other.get()) {}
+	CopyOnly(CopyOnly&&) = delete;
+	~CopyOnly() {}
+
+	int get() const {
+		return m_data;
+	}
+};
+
+/**
+ * A simple class that can be both copy-constructed and move-constructed
+ */
+class CopyMove{
+	private:
+	int m_data;
+
+	static std::mutex s_mutex;
+	static int s_accumulatedConstructionCounter;
+
+	void atomicInc() {
+		std::scoped_lock lock(s_mutex);
+		s_accumulatedConstructionCounter++;
+	}
+
+	public:
+	CopyMove(int data): m_data(data) {
+		atomicInc();
+	}
+
+	CopyMove(const CopyMove & other): m_data(other.get()) {
+		atomicInc();
+	}
+
+	// Move constructor does not increase global counter
+	CopyMove(CopyMove&& other): m_data(other.get()) {}
+
+	~CopyMove() {}
+
+	int get() const {
+		return m_data;
+	}
+
+	static int getAccumulatedConstructionCounter() {
+		return s_accumulatedConstructionCounter;
+	}
+
+	static void resetAccumulatedConstructionCounter() {
+		s_accumulatedConstructionCounter = 0;
+	}
+};
+
+} // namespace openage::datastructure::tests
 
 namespace std {
 

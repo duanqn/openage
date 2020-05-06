@@ -1,4 +1,4 @@
-# Copyright 2015-2018 the openage authors. See copying.md for legal info.
+# Copyright 2015-2020 the openage authors. See copying.md for legal info.
 
 """ Lists of all possible tests; enter your tests here. """
 
@@ -76,6 +76,7 @@ def tests_cpp():
     yield "openage::coord::tests::coord"
     yield "openage::datastructure::tests::constexpr_map"
     yield "openage::datastructure::tests::pairing_heap"
+    yield "openage::datastructure::tests::concurrent_queue"
     yield "openage::job::tests::test_job_manager"
     yield "openage::path::tests::path_node", "pathfinding"
     yield "openage::pyinterface::tests::pyobject"
