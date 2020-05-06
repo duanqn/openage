@@ -48,7 +48,7 @@ public:
 
 	/** Copies the front item in the queue and removes it from the queue. */
 	template<typename... None, typename U = T>
-	T& pop(typename std::enable_if_t<std::is_copy_constructible_v<U>>* t = NULL) {
+	T& pop([[maybe_unused]] typename std::enable_if_t<!std::is_move_constructible_v<U> and std::is_copy_constructible_v<U>>* t = NULL) {
 		static_assert(sizeof...(None) == 0);	// Forbid user-specified template arguments
 		std::unique_lock<mutex_t> lock{this->mutex};
 		auto &item = front();
@@ -58,7 +58,7 @@ public:
 
 	/** Moves the front item in the queue and removes it from the queue. */
 	template<typename... None, typename U = T>
-	T &&pop(typename std::enable_if_t<std::is_move_constructible_v<U>>* t = NULL){
+	T &&pop([[maybe_unused]] typename std::enable_if_t<std::is_move_constructible_v<U>>* t = NULL) {
 		static_assert(sizeof...(None) == 0);	// Forbid user-specified template arguments
 		std::unique_lock<mutex_t> lock{this->mutex};
 		T&& ret = std::move(front());
