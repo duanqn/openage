@@ -48,22 +48,24 @@ public:
 
 	/** Copies the front item in the queue and removes it from the queue. */
 	template<typename... None, typename U = T>
-	T& pop([[maybe_unused]] typename std::enable_if_t<!std::is_move_constructible_v<U> and std::is_copy_constructible_v<U>>* t = NULL) {
+	T pop([[maybe_unused]] typename std::enable_if_t<!std::is_move_constructible_v<U> and std::is_copy_constructible_v<U>>* t = NULL) {
 		static_assert(sizeof...(None) == 0, "User-specified template arguments are prohibited.");
-		std::unique_lock<mutex_t> lock{this->mutex};
-		auto &item = front();
+		std::scoped_lock lock{this->mutex};
+		T ret = this->front();
 		this->queue.pop();
-		return item;
+
+		// Explicitly call the copy constructor since T cannot be move-constructed
+		return T(ret);
 	}
 
 	/** Moves the front item in the queue and removes it from the queue. */
 	template<typename... None, typename U = T>
-	T &&pop([[maybe_unused]] typename std::enable_if_t<std::is_move_constructible_v<U>>* t = NULL) {
+	T pop([[maybe_unused]] typename std::enable_if_t<std::is_move_constructible_v<U>>* t = NULL) {
 		static_assert(sizeof...(None) == 0, "User-specified template arguments are prohibited.");
-		std::unique_lock<mutex_t> lock{this->mutex};
-		T&& ret = std::move(front());
+		std::scoped_lock lock{this->mutex};
+		T ret = std::move(this->front());
 		this->queue.pop();
-		return std::move(ret);
+		return ret;
 	}
 
 	/** Appends the given item to the queue by copying it. */

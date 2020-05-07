@@ -191,6 +191,95 @@ void constexpr_map() {
 	TESTEQUALS(cmap.get(42), 9001);
 }
 
+/**
+ * A simple class that can be move-constructed but not copy-constructed
+ */
+class MoveOnly{
+	private:
+	int m_data;
+
+	int release() {
+		int ret = this->m_data;
+		this->m_data = 0;
+		return ret;
+	}
+
+	public:
+	MoveOnly(int data): m_data(data) {}
+	MoveOnly(const MoveOnly &) = delete;
+	MoveOnly(MoveOnly&& other): m_data(other.release()) {}
+	~MoveOnly() {}
+
+	int get() const {
+		return m_data;
+	}
+};
+
+/**
+ * A simple class that can be copy-constructed but not move-constructed
+ */
+class CopyOnly{
+	private:
+	int m_data;
+	public:
+	CopyOnly(int data): m_data(data) {}
+	CopyOnly(const CopyOnly & other): m_data(other.get()) {}
+	CopyOnly(CopyOnly&&) = delete;
+	~CopyOnly() {}
+
+	int get() const {
+		return m_data;
+	}
+};
+
+/**
+ * A simple class that can be both copy-constructed and move-constructed
+ */
+class CopyMove{
+	private:
+	int m_data;
+
+	static std::mutex s_mutex;
+	static int s_accumulatedConstructionCounter;
+
+	int release() {
+		int ret = this->m_data;
+		this->m_data = 0;
+		return ret;
+	}
+
+	void atomicInc() {
+		std::scoped_lock lock(s_mutex);
+		s_accumulatedConstructionCounter++;
+	}
+
+	public:
+	CopyMove(int data): m_data(data) {
+		atomicInc();
+	}
+
+	CopyMove(const CopyMove & other): m_data(other.get()) {
+		atomicInc();
+	}
+
+	// Move constructor does not increase global counter
+	CopyMove(CopyMove&& other): m_data(other.release()) {}
+
+	~CopyMove() {}
+
+	int get() const {
+		return this->m_data;
+	}
+
+	static int getAccumulatedConstructionCounter() {
+		return CopyMove::s_accumulatedConstructionCounter;
+	}
+
+	static void resetAccumulatedConstructionCounter() {
+		CopyMove::s_accumulatedConstructionCounter = 0;
+	}
+};
+
 std::mutex CopyMove::s_mutex = std::mutex();
 int CopyMove::s_accumulatedConstructionCounter = 0;
 
