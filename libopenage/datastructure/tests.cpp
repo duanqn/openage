@@ -196,22 +196,22 @@ void constexpr_map() {
  */
 class MoveOnly{
 	private:
-	int m_data;
+	int data;
 
 	int release() {
-		int ret = this->m_data;
-		this->m_data = 0;
+		int ret = this->data;
+		this->data = 0;
 		return ret;
 	}
 
 	public:
-	MoveOnly(int data): m_data(data) {}
+	MoveOnly(int data): data(data) {}
 	MoveOnly(const MoveOnly &) = delete;
-	MoveOnly(MoveOnly&& other): m_data(other.release()) {}
+	MoveOnly(MoveOnly&& other): data(other.release()) {}
 	~MoveOnly() {}
 
 	int get() const {
-		return m_data;
+		return this->data;
 	}
 };
 
@@ -220,15 +220,15 @@ class MoveOnly{
  */
 class CopyOnly{
 	private:
-	int m_data;
+	int data;
 	public:
-	CopyOnly(int data): m_data(data) {}
-	CopyOnly(const CopyOnly & other): m_data(other.get()) {}
+	CopyOnly(int data): data(data) {}
+	CopyOnly(const CopyOnly & other): data(other.get()) {}
 	CopyOnly(CopyOnly&&) = delete;
 	~CopyOnly() {}
 
 	int get() const {
-		return m_data;
+		return this->data;
 	}
 };
 
@@ -237,45 +237,45 @@ class CopyOnly{
  */
 class CopyMove{
 	private:
-	int m_data;
+	int data;
 
 	static std::mutex s_mutex;
 	static int s_accumulatedConstructionCounter;
 
 	int release() {
-		int ret = this->m_data;
-		this->m_data = 0;
+		int ret = this->data;
+		this->data = 0;
 		return ret;
 	}
 
-	void atomicInc() {
+	void atomic_inc() {
 		std::scoped_lock lock(s_mutex);
 		s_accumulatedConstructionCounter++;
 	}
 
 	public:
-	CopyMove(int data): m_data(data) {
-		atomicInc();
+	CopyMove(int data): data(data) {
+		atomic_inc();
 	}
 
-	CopyMove(const CopyMove & other): m_data(other.get()) {
-		atomicInc();
+	CopyMove(const CopyMove & other): data(other.get()) {
+		atomic_inc();
 	}
 
 	// Move constructor does not increase global counter
-	CopyMove(CopyMove&& other): m_data(other.release()) {}
+	CopyMove(CopyMove&& other): data(other.release()) {}
 
 	~CopyMove() {}
 
 	int get() const {
-		return this->m_data;
+		return this->data;
 	}
 
-	static int getAccumulatedConstructionCounter() {
+	static int get_accumulated_construction_counter() {
 		return CopyMove::s_accumulatedConstructionCounter;
 	}
 
-	static void resetAccumulatedConstructionCounter() {
+	static void reset_accumulated_construction_counter() {
 		CopyMove::s_accumulatedConstructionCounter = 0;
 	}
 };
@@ -322,8 +322,8 @@ void concurrent_queue_copy_move_elements_compilation() {
 	TESTEQUALS(res.get(), test_data);
 
 	// The second instance should be move-constructed
-	TESTEQUALS(CopyMove::getAccumulatedConstructionCounter(), 1);
-	res.resetAccumulatedConstructionCounter();
+	TESTEQUALS(CopyMove::get_accumulated_construction_counter(), 1);
+	res.reset_accumulated_construction_counter();
 }
 
 // exported test
