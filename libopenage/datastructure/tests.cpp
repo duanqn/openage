@@ -195,7 +195,7 @@ void constexpr_map() {
  * A simple class that can be move-constructed but not copy-constructed
  */
 class MoveOnly{
-	private:
+private:
 	int data;
 
 	int release() {
@@ -204,7 +204,7 @@ class MoveOnly{
 		return ret;
 	}
 
-	public:
+public:
 	MoveOnly(int data): data(data) {}
 	MoveOnly(const MoveOnly &) = delete;
 	MoveOnly(MoveOnly&& other): data(other.release()) {}
@@ -219,9 +219,9 @@ class MoveOnly{
  * A simple class that can be copy-constructed but not move-constructed
  */
 class CopyOnly{
-	private:
+private:
 	int data;
-	public:
+public:
 	CopyOnly(int data): data(data) {}
 	CopyOnly(const CopyOnly & other): data(other.get()) {}
 	CopyOnly(CopyOnly&&) = delete;
@@ -236,7 +236,7 @@ class CopyOnly{
  * A simple class that can be both copy-constructed and move-constructed
  */
 class CopyMove{
-	private:
+private:
 	int data;
 
 	static std::mutex s_mutex;
@@ -253,7 +253,7 @@ class CopyMove{
 		s_accumulatedConstructionCounter++;
 	}
 
-	public:
+public:
 	CopyMove(int data): data(data) {
 		atomic_inc();
 	}

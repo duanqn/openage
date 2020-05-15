@@ -55,6 +55,7 @@ public:
 		this->queue.pop();
 
 		// Explicitly call the copy constructor since T cannot be move-constructed
+		// TODO: change to `return ret;` when we migrate to GCC 10
 		return T(ret);
 	}
 
