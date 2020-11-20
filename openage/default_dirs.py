@@ -61,10 +61,10 @@ def get_dir(which):
         platform_table = WINDOWS_DIRS
 
     else:
-        raise Exception("unsupported platform: '%s'" % sys.platform)
+        raise Exception(f"unsupported platform: '{sys.platform}'")
 
     if which not in platform_table:
-        raise ValueError("unknown directory requested: '{}'".format(which))
+        raise ValueError(f"unknown directory requested: '{which}'")
 
     # fetch the directory template
     env_var, (default_template, required_envs) = platform_table[which]
@@ -78,16 +78,15 @@ def get_dir(which):
     elif default_template:
         env_vars = {var: os.environ.get(var) for var in required_envs}
         if not all(env_vars.values()):
-            raise Exception("could not reconstruct {}, "
-                            "missing env variables: '{}'".format(
-                                which,
-                                [var for (var, val) in env_var.items()
-                                 if val is None].join(", ")
-                            ))
+            missing_variables = [var for (var, val)
+                                 in env_vars.items() if val is None]
+            raise Exception(f"could not reconstruct {which}, "
+                            f"missing env variables: '"
+                            f"{missing_variables.join(', ')}'")
 
         path = default_template.format(**env_vars)
 
     else:
-        raise Exception("could not find '{}' in environment".format(which))
+        raise Exception(f"could not find '{which}' in environment")
 
     return pathlib.Path(path)
